@@ -161,20 +161,23 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
   <header class="top">
     <div class="ticketline">
       <span class="ref">NOQ-BUILD</span>
-      <span class="eyebrow">Shift report · November 3, 2026</span>
+      <span class="eyebrow">Shift report · November 9, 2026</span>
     </div>
     <h1>NoQis Support Desk: the first version you can click</h1>
     <p class="lede">Agents can open, sort, assign, answer, and annotate tickets in a browser. Every change lands in a real
-      Postgres database and in an audit log that can't be edited after the fact. Email, SLA timers, and the customer
-      portal come later.</p>
+      Postgres database and in an audit log that can't be edited after the fact. Phase 0 is complete, a security review
+      is done and fixed, and the decisions for Phases 1 and 2 are made. Email, SLA timers, and the customer portal come
+      later.</p>
     <div class="facts" role="list">
-      <div class="fact" role="listitem"><b>73 / 73</b><span>tests passing</span></div>
-      <div class="fact" role="listitem"><b>12</b><span>plan tasks done</span></div>
-      <div class="fact" role="listitem"><b>56</b><span>audit entries, chain verified</span></div>
+      <div class="fact" role="listitem"><b>83 / 83</b><span>tests passing, on Postgres 17 and 18</span></div>
+      <div class="fact" role="listitem"><b>13</b><span>plan tasks done</span></div>
+      <div class="fact" role="listitem"><b>64</b><span>audit entries, chain verified</span></div>
       <div class="fact" role="listitem"><b>7</b><span>invented sample tickets</span></div>
     </div>
-    <p><a href="https://github.com/shensabo1/noqis-ticketing-system/pull/1">Pull request #1</a> is open against
-      <span class="mono">main</span>.</p>
+    <p>Merged into <span class="mono">main</span> through
+      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/1">pull request #1</a>, with GitHub Actions CI
+      passing. The Phase 1 and 2 decisions are in
+      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/2">pull request #2</a>.</p>
   </header>
 
   <section aria-labelledby="screens-h">
@@ -207,23 +210,23 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="step tx last"><span class="n">5</span><h3>Write the audit entry</h3><p>Last write before commit. Locks the chain, links to the previous entry.</p></div>
       <div class="step"><span class="n">6</span><h3>Commit</h3><p>All of it is saved together, or none of it is.</p></div>
     </div>
-    <span class="txnote">Steps 2 to 5 run inside one transaction, as the restricted <span class="mono">noqis_app</span> database role</span>
+    <span class="txnote">Steps 2 to 5 run inside one transaction. The app logs in as the restricted <span class="mono">noqis_app</span> role and refuses to start with owner rights</span>
 
     <h3>The audit chain</h3>
     <p>Each entry stores a fingerprint (SHA-256 hash) of itself plus the previous entry's fingerprint. Editing or
       deleting an old entry breaks every link after it, and the verifier reports where.</p>
     <div class="chain">
       <div class="chain-row">
-        <div class="block"><span class="h">seq 53 · NOQ-1002</span><span class="act">reply.added</span><span class="h">prev 40d3…</span><span class="h">hash 6c73…</span></div>
+        <div class="block"><span class="h">seq 61 · NOQ-1002</span><span class="act">priority.changed</span><span class="h">prev efe9…</span><span class="h">hash d1e4…</span></div>
         <div class="link" aria-hidden="true"></div>
-        <div class="block"><span class="h">seq 54 · NOQ-1002</span><span class="act">status.changed</span><span class="h">prev 6c73…</span><span class="h">hash fc4c…</span></div>
+        <div class="block"><span class="h">seq 62 · NOQ-1002</span><span class="act">assignment.changed</span><span class="h">prev d1e4…</span><span class="h">hash a513…</span></div>
         <div class="link" aria-hidden="true"></div>
-        <div class="block"><span class="h">seq 55 · NOQ-1008</span><span class="act">created</span><span class="h">prev fc4c…</span><span class="h">hash ed33…</span></div>
+        <div class="block"><span class="h">seq 63 · NOQ-1004</span><span class="act">status.changed</span><span class="h">prev a513…</span><span class="h">hash c33c…</span></div>
         <div class="link" aria-hidden="true"></div>
-        <div class="block"><span class="h">seq 56 · NOQ-1008</span><span class="act">note.added</span><span class="h">prev ed33…</span><span class="h">hash 155a…</span></div>
+        <div class="block"><span class="h">seq 64 · NOQ-1004</span><span class="act">note.added</span><span class="h">prev c33c…</span><span class="h">hash afe7…</span></div>
       </div>
     </div>
-    <p class="later">The four most recent entries in the local database, with hashes shortened to their first four characters. Each “prev” matches the “hash” before it.</p>
+    <p class="later">The four most recent entries in the local database, with hashes shortened to their first four characters. Each “prev” matches the “hash” before it. <span class="mono">pnpm db:verify-audit</span> checks the whole chain, and CI runs it on every pull request.</p>
   </section>
 
   <section aria-labelledby="rules-h">
@@ -231,11 +234,13 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <h2 id="rules-h">Rules the system enforces</h2>
     <div class="rules">
       <div class="rule"><h3>Audit data can't be changed</h3><p class="how">Database triggers reject UPDATE, DELETE, and TRUNCATE on the audit log and the timeline, even for the database owner and on each monthly partition.</p><span class="where">0002_audit_log.sql · 0005_tickets.sql</span></div>
-      <div class="rule"><h3>Internal notes stay internal</h3><p class="how">Notes are marked internal on the timeline and look different in the console. Audit entries store message IDs, never message text.</p><span class="where">tickets.test.ts</span></div>
+      <div class="rule"><h3>Internal notes stay internal</h3><p class="how">Notes are marked internal on the timeline and look different in the console. An agent's reason for a status change is internal too. Audit entries store message IDs, never message text.</p><span class="where">tickets.test.ts</span></div>
       <div class="rule"><h3>Closed means closed</h3><p class="how">A closed ticket can't be edited or receive messages. The API refuses, and so does a database trigger.</p><span class="where">reject_closed_ticket_update()</span></div>
       <div class="rule"><h3>Options are data</h3><p class="how">Statuses, allowed moves, priorities, and categories load from <span class="mono">config/seed/</span>. Re-seeding never overwrites an admin's edit.</p><span class="where">db/seed.ts</span></div>
       <div class="rule"><h3>Someone owns active work</h3><p class="how">A ticket can't leave New without an assignee. The first public reply assigns the ticket to whoever sent it.</p><span class="where">TICKET_LIFECYCLE.md "Assignment"</span></div>
-      <div class="rule"><h3>The dev shortcut can't ship</h3><p class="how">The agent switcher exists only when <span class="mono">NODE_ENV=development</span>. In production the route returns 404 and the header is ignored.</p><span class="where">api.test.ts</span></div>
+      <div class="rule"><h3>The dev shortcut can't ship</h3><p class="how">The agent switcher exists only when <span class="mono">NODE_ENV=development</span>, and only on this machine's own address. In production the route returns 404 and the header is ignored.</p><span class="where">api.test.ts · foundation.test.ts</span></div>
+      <div class="rule"><h3>The app can't use owner rights</h3><p class="how">The server logs in as a restricted role that can't disable the audit triggers, and refuses to start if it is given the database owner's login.</p><span class="where">assertApplicationRole() · api.test.ts</span></div>
+      <div class="rule"><h3>Logs help, without leaking</h3><p class="how">Logs keep user names, emails, IP addresses, and correlation IDs for troubleshooting. Passwords, tokens, and customer message text are removed.</p><span class="where">logger.ts · foundation.test.ts</span></div>
     </div>
   </section>
 
@@ -243,17 +248,32 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <span class="eyebrow">Where this sits in the plan</span>
     <h2 id="road-h">Roadmap progress</h2>
     <div class="road">
-      <div class="phase"><div class="name">Phase 0<small>Foundations</small></div><div class="meter" role="img" aria-label="8 of 9 tasks"><i style="width:88.9%"></i></div><span class="pill part">8 / 9</span></div>
-      <div class="phase here"><div class="name">Test slice<small>Browser version</small></div><div class="meter" role="img" aria-label="4 of 4 tasks"><i style="width:100%"></i></div><span class="pill done">4 / 4</span></div>
-      <div class="phase"><div class="name">Phase 1<small>Ticket core</small></div><div class="meter" role="img" aria-label="0 of 11 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 11</span></div>
-      <div class="phase"><div class="name">Phase 2<small>Email</small></div><div class="meter" role="img" aria-label="0 of 12 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 12</span></div>
+      <div class="phase"><div class="name">Phase 0<small>Foundations</small></div><div class="meter" role="img" aria-label="9 of 9 tasks"><i style="width:100%"></i></div><span class="pill done">9 / 9</span></div>
+      <div class="phase"><div class="name">Test slice<small>Browser version</small></div><div class="meter" role="img" aria-label="4 of 4 tasks"><i style="width:100%"></i></div><span class="pill done">4 / 4</span></div>
+      <div class="phase here"><div class="name">Phase 1<small>Ticket core · next</small></div><div class="meter" role="img" aria-label="0 of 11 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 11</span></div>
+      <div class="phase"><div class="name">Phase 2<small>Email</small></div><div class="meter" role="img" aria-label="0 of 13 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 13</span></div>
       <div class="phase"><div class="name">Phase 3<small>SLA timers</small></div><div class="meter" role="img" aria-label="0 of 7 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 7</span></div>
       <div class="phase"><div class="name">Phase 4<small>Agent console</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
       <div class="phase"><div class="name">Phase 5<small>Widget and portal</small></div><div class="meter" role="img" aria-label="0 of 8 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 8</span></div>
-      <div class="phase"><div class="name">Phase 6<small>Launch</small></div><div class="meter" role="img" aria-label="0 of 8 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 8</span></div>
+      <div class="phase"><div class="name">Phase 6<small>Launch</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
     </div>
-    <p class="later">The one open Phase 0 task is GitHub Actions CI. The test slice takes a thin piece of Phases 1 and 4,
-      and those phases still own the full versions, so their counts stay at zero.</p>
+    <p class="later">Phase 0 finished with GitHub Actions CI, which checks every change on Postgres 17 and 18. The test slice
+      takes a thin piece of Phases 1 and 4, and those phases still own the full versions, so their counts stay at zero.
+      Phase 2 gained a task for audit checkpoints kept outside the database, and Phase 6 gained a legal review.</p>
+  </section>
+
+  <section aria-labelledby="decisions-h">
+    <span class="eyebrow">Settled for Phases 1 and 2</span>
+    <h2 id="decisions-h">Decisions made</h2>
+    <p>These start as sensible defaults and can be changed later.</p>
+    <div class="rules">
+      <div class="rule"><h3>SLA targets</h3><p class="how">The site's promises stand: under 4 hours on Growth, under 8 minutes for a Professional P1. Other targets are placeholders until confirmed.</p><span class="where">D-04</span></div>
+      <div class="rule"><h3>P1 at night</h3><p class="how">PagerDuty pages the on-call person. Agents set P1, and a "site down" email from a Professional customer pages someone to check.</p><span class="where">D-05</span></div>
+      <div class="rule"><h3>Receipts</h3><p class="how">One plainly labeled automated receipt with a <span class="mono">NOQ-1234</span> reference. Every real reply still comes from a named person.</p><span class="where">D-06</span></div>
+      <div class="rule"><h3>Compliance and billing</h3><p class="how">Strong controls now, a legal review before launch, and no card data stored. Agents answer billing questions but never touch payment systems.</p><span class="where">D-07 · D-08</span></div>
+      <div class="rule"><h3>Unknown senders</h3><p class="how">Email from an unrecognized address goes to a triage queue for a person to sort, with no automatic reply.</p><span class="where">D-09</span></div>
+      <div class="rule"><h3>Branding and hosting</h3><p class="how">NoQis branding only on customer email. Data stays in a US region, encrypted. The hosting provider is still being chosen.</p><span class="where">D-10 · D-02</span></div>
+    </div>
   </section>
 
   <section aria-labelledby="run-h">
@@ -266,8 +286,9 @@ cd ~/noqis-ticketing-system
 fnm use               <span class="c"># Node 26</span>
 docker compose up -d  <span class="c"># Postgres + Mailpit</span>
 pnpm install
-pnpm db:setup         <span class="c"># migrate, seed, sample data</span>
-pnpm dev              <span class="c"># open http://127.0.0.1:5173</span></pre>
+pnpm db:setup         <span class="c"># migrate, app login, seed, sample data</span>
+pnpm dev              <span class="c"># open http://127.0.0.1:5173</span>
+pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span></pre>
         <button class="copy" type="button" id="copy">Copy commands</button>
       </div>
       <ul class="checks">
@@ -278,6 +299,7 @@ pnpm dev              <span class="c"># open http://127.0.0.1:5173</span></pre>
         <li><input type="checkbox" id="c5"><label for="c5">Edit one ticket in two tabs. The second save says someone else changed it.</label></li>
         <li><input type="checkbox" id="c6"><label for="c6">Resolve, then close a ticket. Everything on it locks.</label></li>
         <li><input type="checkbox" id="c7"><label for="c7">Create a ticket. Categories follow the chosen type.</label></li>
+        <li><input type="checkbox" id="c8"><label for="c8">Run <span class="mono">pnpm db:verify-audit</span>. Every change you made is in the verified chain.</label></li>
       </ul>
     </div>
     <p class="later">Not in this version: real sign-in, sending email, SLA timers, merging, the website widget, and the
