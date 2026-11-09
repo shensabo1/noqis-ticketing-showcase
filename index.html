@@ -267,10 +267,11 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <h2 id="decisions-h">Decisions made</h2>
     <p>These start as sensible defaults and can be changed later.</p>
     <div class="rules">
-      <div class="rule"><h3>SLA targets</h3><p class="how">The site's promises stand: under 4 hours on Growth, under 8 minutes for a Professional P1. Other targets are placeholders until confirmed.</p><span class="where">D-04</span></div>
-      <div class="rule"><h3>P1 at night</h3><p class="how">PagerDuty pages the on-call person. Agents set P1, and a "site down" email from a Professional customer pages someone to check.</p><span class="where">D-05</span></div>
+      <div class="rule"><h3>Customer updates</h3><p class="how">P1: every 10 minutes, or kept updated by phone. P2: every 2 hours. P3: every 4 hours. P4: every 8 hours, in business hours. The site's first-response promises stand.</p><span class="where">D-04</span></div>
+      <div class="rule"><h3>P1 at night</h3><p class="how">PagerDuty pages the on-call rotation: JR, Shen, and Najib. Agents set P1, and a "site down" email from a Professional customer pages someone to check.</p><span class="where">D-05</span></div>
       <div class="rule"><h3>Receipts</h3><p class="how">One plainly labeled automated receipt with a <span class="mono">NOQ-1234</span> reference. Every real reply still comes from a named person.</p><span class="where">D-06</span></div>
-      <div class="rule"><h3>Compliance and billing</h3><p class="how">Strong controls now, a legal review before launch, and no card data stored. Agents answer billing questions but never touch payment systems.</p><span class="where">D-07 · D-08</span></div>
+      <div class="rule"><h3>Three queues</h3><p class="how">Edge Ninjas for support, Billing for the billing department, and Escalations for tickets that need senior attention. Invoices stay in the CRM.</p><span class="where">D-08 · A-17</span></div>
+      <div class="rule"><h3>Compliance</h3><p class="how">Strong controls now, a legal review before launch, and no card data stored. Customers are warned not to send card numbers, health data, or keys.</p><span class="where">D-07</span></div>
       <div class="rule"><h3>Unknown senders</h3><p class="how">Email from an unrecognized address goes to a triage queue for a person to sort, with no automatic reply.</p><span class="where">D-09</span></div>
       <div class="rule"><h3>Branding and hosting</h3><p class="how">NoQis branding only on customer email. Data stays in a US region, encrypted. The hosting provider is still being chosen.</p><span class="where">D-10 · D-02</span></div>
     </div>
