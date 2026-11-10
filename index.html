@@ -161,28 +161,31 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
   <header class="top">
     <div class="ticketline">
       <span class="ref">NOQ-BUILD</span>
-      <span class="eyebrow">Shift report · November 9, 2026</span>
+      <span class="eyebrow">Shift report · November 10, 2026</span>
     </div>
-    <h1>NoQis Support Desk: the first version you can click</h1>
-    <p class="lede">Agents can open, sort, assign, answer, and annotate tickets in a browser. Every change lands in a real
-      Postgres database and in an audit log that can't be edited after the fact. Phase 0 is complete, a security review
-      is done and fixed, and the decisions for Phases 1 and 2 are made. Email, SLA timers, and the customer portal come
-      later.</p>
+    <h1>NoQis Support Desk: the ticket core is complete</h1>
+    <p class="lede">Phase 1, the ticket core, is complete and passed its phase review. Agents sign in with a required
+      authenticator app; tickets carry teams, watchers, tags, and custom fields; tickets merge, follow up after closing,
+      and move automatically when a customer replies; and customers will see a customer-safe view that names their Edge
+      Ninja. Every change lands in Postgres with its timeline entry and an audit entry that can't be edited after the
+      fact. Email is next, and its blocking decisions are made.</p>
     <div class="facts" role="list">
-      <div class="fact" role="listitem"><b>83 / 83</b><span>tests passing, on Postgres 17 and 18</span></div>
-      <div class="fact" role="listitem"><b>13</b><span>plan tasks done</span></div>
-      <div class="fact" role="listitem"><b>64</b><span>audit entries, chain verified</span></div>
+      <div class="fact" role="listitem"><b>445 / 445</b><span>tests passing, on Postgres 17 and 18</span></div>
+      <div class="fact" role="listitem"><b>26</b><span>plan tasks done</span></div>
+      <div class="fact" role="listitem"><b>126</b><span>audit entries, chain verified</span></div>
       <div class="fact" role="listitem"><b>7</b><span>invented sample tickets</span></div>
     </div>
-    <p>Merged into <span class="mono">main</span> through
-      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/1">pull request #1</a>, with GitHub Actions CI
-      passing. The Phase 1 and 2 decisions are in
-      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/2">pull request #2</a>.</p>
+    <p>Phase 1 was merged into <span class="mono">main</span> through pull requests #3 to #20, each reviewed for
+      security and passing GitHub Actions CI, which also scans for leaked secrets, vulnerable packages, and risky code on
+      every change. The decisions that unblock email are in
+      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/21">pull request #21</a>.</p>
   </header>
 
   <section aria-labelledby="screens-h">
     <span class="eyebrow">What an agent sees</span>
     <h2 id="screens-h">Three screens</h2>
+    <p class="later">Screens from the browser test version of the console. The full console, with the merge, tag, and
+      watcher controls, comes in Phase 4.</p>
     <div class="tabs" role="tablist" aria-label="Console screens">
       <button class="tab" role="tab" id="tab-list" aria-controls="panel" aria-selected="true" data-screen="list">Ticket list</button>
       <button class="tab" role="tab" id="tab-ticket" aria-controls="panel" aria-selected="false" data-screen="ticket">Ticket page</button>
@@ -203,10 +206,10 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <p>Each save is one database transaction. If any step fails, nothing from the save is kept, including its audit
       entry.</p>
     <div class="path">
-      <div class="step"><span class="n">1</span><h3>Check who</h3><p>The dev switcher names the agent. Outside development the API refuses with 401.</p></div>
+      <div class="step"><span class="n">1</span><h3>Check who</h3><p>A signed-in agent whose session passed its authenticator code. Permissions come from one registry, and refusals are audited.</p></div>
       <div class="step tx"><span class="n">2</span><h3>Check the rules</h3><p>Allowed status moves come from the database. Stale edits are refused.</p></div>
       <div class="step tx"><span class="n">3</span><h3>Change the ticket</h3><p>The ticket row is updated and its version number goes up.</p></div>
-      <div class="step tx"><span class="n">4</span><h3>Add to the timeline</h3><p>A <span class="mono">ticket_events</span> row, marked internal or customer-visible.</p></div>
+      <div class="step tx"><span class="n">4</span><h3>Add to the timeline</h3><p>A <span class="mono">ticket_events</span> row, marked internal or customer-visible. The database refuses a ticket change without one.</p></div>
       <div class="step tx last"><span class="n">5</span><h3>Write the audit entry</h3><p>Last write before commit. Locks the chain, links to the previous entry.</p></div>
       <div class="step"><span class="n">6</span><h3>Commit</h3><p>All of it is saved together, or none of it is.</p></div>
     </div>
@@ -240,6 +243,10 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="rule"><h3>Someone owns active work</h3><p class="how">A ticket can't leave New without an assignee. The first public reply assigns the ticket to whoever sent it.</p><span class="where">TICKET_LIFECYCLE.md "Assignment"</span></div>
       <div class="rule"><h3>The dev shortcut can't ship</h3><p class="how">The agent switcher exists only when <span class="mono">NODE_ENV=development</span>, and only on this machine's own address. In production the route returns 404 and the header is ignored.</p><span class="where">api.test.ts · foundation.test.ts</span></div>
       <div class="rule"><h3>The app can't use owner rights</h3><p class="how">The server logs in as a restricted role that can't disable the audit triggers, and refuses to start if it is given the database owner's login.</p><span class="where">assertApplicationRole() · api.test.ts</span></div>
+      <div class="rule"><h3>Customers stay separate</h3><p class="how">Every customer read is scoped to the caller's company, and Postgres row-level security repeats the rule. A cross-tenant test suite proves it, and anything a customer can't see answers "not found".</p><span class="where">tenancy-*.test.ts</span></div>
+      <div class="rule"><h3>Notes never reach customers</h3><p class="how">The customer view is built from an allowlist. A test plants secret markers in every internal place and proves none of them appear, including on merged and follow-up tickets.</p><span class="where">tenancy-note-leak.test.ts</span></div>
+      <div class="rule"><h3>Every change has its record</h3><p class="how">A ticket change can't commit without its timeline entry from the same transaction, and the database checks it at commit time.</p><span class="where">0022 · ticket-timeline.test.ts</span></div>
+      <div class="rule"><h3>Humans answer customers</h3><p class="how">AI never writes or sends replies. The only automatic email is a plainly labeled receipt; any AI help is for agents only and is never sent.</p><span class="where">CLAUDE.md rule 1</span></div>
       <div class="rule"><h3>Logs help, without leaking</h3><p class="how">Logs keep user names, emails, IP addresses, and correlation IDs for troubleshooting. Passwords, tokens, and customer message text are removed.</p><span class="where">logger.ts · foundation.test.ts</span></div>
     </div>
   </section>
@@ -250,16 +257,17 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <div class="road">
       <div class="phase"><div class="name">Phase 0<small>Foundations</small></div><div class="meter" role="img" aria-label="9 of 9 tasks"><i style="width:100%"></i></div><span class="pill done">9 / 9</span></div>
       <div class="phase"><div class="name">Test slice<small>Browser version</small></div><div class="meter" role="img" aria-label="4 of 4 tasks"><i style="width:100%"></i></div><span class="pill done">4 / 4</span></div>
-      <div class="phase here"><div class="name">Phase 1<small>Ticket core · next</small></div><div class="meter" role="img" aria-label="0 of 11 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 11</span></div>
-      <div class="phase"><div class="name">Phase 2<small>Email</small></div><div class="meter" role="img" aria-label="0 of 13 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 13</span></div>
-      <div class="phase"><div class="name">Phase 3<small>SLA timers</small></div><div class="meter" role="img" aria-label="0 of 7 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 7</span></div>
-      <div class="phase"><div class="name">Phase 4<small>Agent console</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
-      <div class="phase"><div class="name">Phase 5<small>Widget and portal</small></div><div class="meter" role="img" aria-label="0 of 8 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 8</span></div>
+      <div class="phase"><div class="name">Phase 1<small>Ticket core · done</small></div><div class="meter" role="img" aria-label="13 of 13 tasks"><i style="width:100%"></i></div><span class="pill done">13 / 13</span></div>
+      <div class="phase here"><div class="name">Phase 2<small>Email · next</small></div><div class="meter" role="img" aria-label="0 of 13 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 13</span></div>
+      <div class="phase"><div class="name">Phase 3<small>SLA timers</small></div><div class="meter" role="img" aria-label="0 of 8 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 8</span></div>
+      <div class="phase"><div class="name">Phase 4<small>Agent console</small></div><div class="meter" role="img" aria-label="0 of 16 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 16</span></div>
+      <div class="phase"><div class="name">Phase 5<small>Widget and portal</small></div><div class="meter" role="img" aria-label="0 of 12 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 12</span></div>
       <div class="phase"><div class="name">Phase 6<small>Launch</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
     </div>
-    <p class="later">Phase 0 finished with GitHub Actions CI, which checks every change on Postgres 17 and 18. The test slice
-      takes a thin piece of Phases 1 and 4, and those phases still own the full versions, so their counts stay at zero.
-      Phase 2 gained a task for audit checkpoints kept outside the database, and Phase 6 gained a legal review.</p>
+    <p class="later">Phase 1 finished with a phase review: a spec check and a security review, run twice, with every
+      finding fixed. Phase 3 gained the time-based moves (auto-close after 7 days resolved, and a reminder after 5 days
+      waiting on the customer), and Phases 4 and 5 gained the console panels and portal views agreed in the design
+      mockups.</p>
   </section>
 
   <section aria-labelledby="decisions-h">
@@ -268,14 +276,19 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
     <p>These start as sensible defaults and the team's own answers, and can be changed later.</p>
     <div class="rules">
       <div class="rule"><h3>Customer updates</h3><p class="how">P1: every 10 minutes, or kept updated by phone. P2: every 2 hours. P3: every 4 hours. P4: every 8 hours, in business hours. The site's first-response promises stand.</p><span class="where">D-04</span></div>
-      <div class="rule"><h3>P1 at night</h3><p class="how">PagerDuty pages the on-call rotation: JR, Shen, and Najib. Agents set P1, and a "site down" email from a Professional customer pages someone to check.</p><span class="where">D-05</span></div>
+      <div class="rule"><h3>P1 at night</h3><p class="how">PagerDuty pages the on-call rotation. Agents set P1, and a "site down" email from a Professional customer pages someone to check.</p><span class="where">D-05</span></div>
       <div class="rule"><h3>Receipts</h3><p class="how">One plainly labeled automated receipt with a <span class="mono">NOQ-1234</span> reference. Every real reply still comes from a named person.</p><span class="where">D-06</span></div>
       <div class="rule"><h3>Three queues</h3><p class="how">Edge Ninjas for support, Billing for the billing department, and Escalations for tickets that need senior attention. Invoices stay in the CRM.</p><span class="where">D-08 · A-17</span></div>
       <div class="rule"><h3>Compliance</h3><p class="how">Strong controls now, a legal review before launch, and no card data stored. Customers are warned not to send card numbers, health data, or keys.</p><span class="where">D-07</span></div>
       <div class="rule"><h3>Customer portal</h3><p class="how">Customers sign in from the website's support login and see open and past tickets: status, priority (Low to Critical), whether it is pending an agent or customer update, and the conversation. They can open tickets and reply.</p><span class="where">D-11 · A-18</span></div>
       <div class="rule"><h3>Two update boxes</h3><p class="how">On each ticket, agents get a Customer update box that goes to the customer, and an Internal update box only staff see. Every update is saved on the ticket. An @mention pings that teammate by email and Slack.</p><span class="where">A-19</span></div>
       <div class="rule"><h3>Unknown senders</h3><p class="how">Email from an unrecognized address goes to a triage queue for a person to sort, with no automatic reply.</p><span class="where">D-09</span></div>
-      <div class="rule"><h3>Branding and hosting</h3><p class="how">NoQis branding only on customer email. Data stays in a US region, encrypted. The hosting provider is still being chosen.</p><span class="where">D-10 · D-02</span></div>
+      <div class="rule"><h3>Branding and hosting</h3><p class="how">NoQis branding only on customer email. Data stays in a US region, encrypted. The database is Supabase; the application host is still being chosen.</p><span class="where">D-10 · D-02</span></div>
+      <div class="rule"><h3>Your Edge Ninja</h3><p class="how">An opened ticket tells the customer "Your Edge Ninja is Maya", first name only, or "billing specialist" for billing. Staff see the whole team's workload by person.</p><span class="where">A-39</span></div>
+      <div class="rule"><h3>People on a ticket</h3><p class="how">The requester or a customer admin adds colleagues, who join at once from the company's own domain; other addresses wait for an agent's approval. Staff follow tickets with a Watch button.</p><span class="where">D-16 · A-29</span></div>
+      <div class="rule"><h3>Replies and closing</h3><p class="how">A customer reply moves a waiting or resolved ticket back to open; a reply after closing opens a linked follow-up. Customers can close their own tickets, with an optional note.</p><span class="where">A-40 · A-41</span></div>
+      <div class="rule"><h3>Mail from someone new</h3><p class="how">Email from someone not on a ticket is never held or attached: it opens a new ticket, linked to the one it mentioned so the agent sees the context.</p><span class="where">D-17</span></div>
+      <div class="rule"><h3>AI for agents only</h3><p class="how">An assistant may suggest troubleshooting steps and explain issues to newer agents, in a panel marked as AI. It never writes to customers.</p><span class="where">A-36</span></div>
     </div>
   </section>
 
@@ -295,7 +308,7 @@ pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span><
         <button class="copy" type="button" id="copy">Copy commands</button>
       </div>
       <ul class="checks">
-        <li><input type="checkbox" id="c1"><label for="c1">Switch agents with the purple DEV control. The “Me” filter follows.</label></li>
+        <li><input type="checkbox" id="c1"><label for="c1">Sign in with an invite link and an authenticator app, or switch agents with the purple DEV control. The “Me” filter follows.</label></li>
         <li><input type="checkbox" id="c2"><label for="c2">On NOQ-1002, try moving New to Open with nobody assigned. It's refused.</label></li>
         <li><input type="checkbox" id="c3"><label for="c3">Send a public reply on an unassigned ticket. It becomes yours.</label></li>
         <li><input type="checkbox" id="c4"><label for="c4">As Priya, try taking Jordan's NOQ-1003. Refused. As Sam (lead), it works.</label></li>
@@ -305,8 +318,9 @@ pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span><
         <li><input type="checkbox" id="c8"><label for="c8">Run <span class="mono">pnpm db:verify-audit</span>. Every change you made is in the verified chain.</label></li>
       </ul>
     </div>
-    <p class="later">Not in this version: real sign-in, sending email, SLA timers, merging, the website widget, and the
-      portal. Public replies are saved but not sent.</p>
+    <p class="later">Built but not yet on screen: merge, tags, watchers, and the customer actions, which the Phase 4
+      console and Phase 5 portal will show. Not built yet: sending and receiving email, SLA timers, the website widget,
+      and the portal. Public replies are saved but not sent.</p>
   </section>
 
   <footer>Every organization, person, and ticket shown is invented sample data. Screenshots are from the running
@@ -318,7 +332,7 @@ const shots = {
   list: { src: "screenshots/ticket-list.png", url: "127.0.0.1:5173/#/", h: 700, alt: "Ticket list with status and assignee filters and five open tickets",
     notes: [["Filters", "Status (all open, a single status, or all) and assignee (anyone, me, unassigned, a named agent)."],
             ["Signals", "Status and priority pills. P1 stands out in red."],
-            ["Acting as", "The DEV switcher stands in for sign-in. It only appears in development."]] },
+            ["Acting as", "Agents sign in with a password and an authenticator app. In development, the DEV switcher can act as any sample agent."]] },
   ticket: { src: "screenshots/ticket-page.png", url: "127.0.0.1:5173/#/tickets/NOQ-1001", h: 1100, alt: "Ticket page showing the conversation, an internal note, controls, and a timeline",
     notes: [["Conversation", "Customer messages, public replies, and internal notes, which are yellow and dashed so they're never mistaken for replies."],
             ["Controls", "Status only offers moves allowed from the current one. Priority and assignee save immediately."],
