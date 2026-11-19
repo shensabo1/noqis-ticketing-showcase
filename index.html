@@ -161,40 +161,41 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
   <header class="top">
     <div class="ticketline">
       <span class="ref">NOQ-BUILD</span>
-      <span class="eyebrow">Shift report · November 10, 2026</span>
+      <span class="eyebrow">Shift report · November 18, 2026</span>
     </div>
-    <h1>NoQis Support Desk: the ticket core is complete</h1>
-    <p class="lede">Phase 1, the ticket core, is complete and passed its phase review. Agents sign in with a required
-      authenticator app; tickets carry teams, watchers, tags, and custom fields; tickets merge, follow up after closing,
-      and move automatically when a customer replies; and customers will see a customer-safe view that names their Edge
-      Ninja. Every change lands in Postgres with its timeline entry and an audit entry that can't be edited after the
-      fact. Email is next, and its blocking decisions are made.</p>
+    <h1>NoQis Support Desk: email, SLA timers, and an agent console in the NoQis look</h1>
+    <p class="lede">Phases 0 to 3 are built: the ticket core, email in and out, and SLA timers with on-call paging.
+      Phase 4, the agent console, is a third done. Agents work from queues with live SLA countdowns, see a ticket's
+      customer, related tickets, and origin health beside the conversation, and use the NoQis branding in dark mode,
+      with a light mode for anyone who prefers it. Every change still lands in Postgres with its timeline entry and an
+      audit entry that can't be edited after the fact.</p>
     <div class="facts" role="list">
-      <div class="fact" role="listitem"><b>445 / 445</b><span>tests passing, on Postgres 17 and 18</span></div>
-      <div class="fact" role="listitem"><b>26</b><span>plan tasks done</span></div>
-      <div class="fact" role="listitem"><b>126</b><span>audit entries, chain verified</span></div>
-      <div class="fact" role="listitem"><b>7</b><span>invented sample tickets</span></div>
+      <div class="fact" role="listitem"><b>1,067 / 1,067</b><span>tests passing, on Postgres 17 and 18</span></div>
+      <div class="fact" role="listitem"><b>53</b><span>plan tasks done</span></div>
+      <div class="fact" role="listitem"><b>53</b><span>database migrations</span></div>
+      <div class="fact" role="listitem"><b>0</b><span>open security scan failures</span></div>
     </div>
-    <p>Phase 1 was merged into <span class="mono">main</span> through pull requests #3 to #20, each reviewed for
-      security and passing GitHub Actions CI, which also scans for leaked secrets, vulnerable packages, and risky code on
-      every change. The decisions that unblock email are in
-      <a href="https://github.com/shensabo1/noqis-ticketing-system/pull/21">pull request #21</a>.</p>
+    <p>Work is merged into <span class="mono">main</span> through pull requests, 51 so far, each passing GitHub Actions
+      CI on PostgreSQL 17 and 18. Before every commit the change also passes scans for leaked secrets, vulnerable
+      packages, and OWASP code rules, plus an active OWASP ZAP attack scan of the whole agent API. The riskiest
+      changes get an independent security review, and every finding is fixed with a test.</p>
   </header>
 
   <section aria-labelledby="screens-h">
     <span class="eyebrow">What an agent sees</span>
-    <h2 id="screens-h">Three screens</h2>
-    <p class="later">Screens from the browser test version of the console. The full console, with the merge, tag, and
-      watcher controls, comes in Phase 4.</p>
+    <h2 id="screens-h">The agent console</h2>
+    <p class="later">Screens from the running console with invented sample data. Merge, tag, and watcher controls,
+      the two update boxes, and the admin screens are still to come in Phase 4.</p>
     <div class="tabs" role="tablist" aria-label="Console screens">
-      <button class="tab" role="tab" id="tab-list" aria-controls="panel" aria-selected="true" data-screen="list">Ticket list</button>
+      <button class="tab" role="tab" id="tab-list" aria-controls="panel" aria-selected="true" data-screen="list">Queues</button>
       <button class="tab" role="tab" id="tab-ticket" aria-controls="panel" aria-selected="false" data-screen="ticket">Ticket page</button>
+      <button class="tab" role="tab" id="tab-light" aria-controls="panel" aria-selected="false" data-screen="light">Light mode</button>
       <button class="tab" role="tab" id="tab-new" aria-controls="panel" aria-selected="false" data-screen="new">New ticket</button>
     </div>
     <div class="screen" id="panel" role="tabpanel" aria-live="polite">
       <div class="frame">
         <div class="bar"><i></i><i></i><i></i><span id="shot-url">127.0.0.1:5173/#/</span></div>
-        <img id="shot" alt="" width="1300" height="700">
+        <img id="shot" alt="" width="1440" height="1000">
       </div>
       <ul class="callouts" id="callouts"></ul>
     </div>
@@ -248,6 +249,9 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="rule"><h3>Every change has its record</h3><p class="how">A ticket change can't commit without its timeline entry from the same transaction, and the database checks it at commit time.</p><span class="where">0022 · ticket-timeline.test.ts</span></div>
       <div class="rule"><h3>Humans answer customers</h3><p class="how">AI never writes or sends replies. The only automatic email is a plainly labeled receipt; any AI help is for agents only and is never sent.</p><span class="where">CLAUDE.md rule 1</span></div>
       <div class="rule"><h3>Logs help, without leaking</h3><p class="how">Logs keep user names, emails, IP addresses, and correlation IDs for troubleshooting. Passwords, tokens, and customer message text are removed.</p><span class="where">logger.ts · foundation.test.ts</span></div>
+      <div class="rule"><h3>Inbound email is never lost</h3><p class="how">The raw email is stored before the provider is told it arrived, and processing it twice changes nothing. Failed mail waits in a queue an admin can replay.</p><span class="where">inbound-processing.test.ts</span></div>
+      <div class="rule"><h3>SLA math can be trusted</h3><p class="how">Timer calculations take an injected clock and calendar and never read the system time, so business hours, holidays, and daylight-saving changes are tested exactly.</p><span class="where">sla-timer.test.ts · lint rule</span></div>
+      <div class="rule"><h3>Panels stay within one customer</h3><p class="how">Other open and related tickets come only from the ticket's own company. Triage tickets show just the sender, and viewing another team's tickets is audited.</p><span class="where">ticket-panels.test.ts</span></div>
     </div>
   </section>
 
@@ -258,16 +262,17 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="phase"><div class="name">Phase 0<small>Foundations</small></div><div class="meter" role="img" aria-label="9 of 9 tasks"><i style="width:100%"></i></div><span class="pill done">9 / 9</span></div>
       <div class="phase"><div class="name">Test slice<small>Browser version</small></div><div class="meter" role="img" aria-label="4 of 4 tasks"><i style="width:100%"></i></div><span class="pill done">4 / 4</span></div>
       <div class="phase"><div class="name">Phase 1<small>Ticket core · done</small></div><div class="meter" role="img" aria-label="13 of 13 tasks"><i style="width:100%"></i></div><span class="pill done">13 / 13</span></div>
-      <div class="phase here"><div class="name">Phase 2<small>Email · next</small></div><div class="meter" role="img" aria-label="0 of 13 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 13</span></div>
-      <div class="phase"><div class="name">Phase 3<small>SLA timers</small></div><div class="meter" role="img" aria-label="0 of 8 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 8</span></div>
-      <div class="phase"><div class="name">Phase 4<small>Agent console</small></div><div class="meter" role="img" aria-label="0 of 16 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 16</span></div>
+      <div class="phase"><div class="name">Phase 2<small>Email · staging test waits</small></div><div class="meter" role="img" aria-label="13 of 14 tasks"><i style="width:93%"></i></div><span class="pill done">13 / 14</span></div>
+      <div class="phase"><div class="name">Phase 3<small>SLA timers · staging test waits</small></div><div class="meter" role="img" aria-label="8 of 8 tasks"><i style="width:100%"></i></div><span class="pill done">8 / 8</span></div>
+      <div class="phase here"><div class="name">Phase 4<small>Agent console · now</small></div><div class="meter" role="img" aria-label="6 of 19 tasks"><i style="width:32%"></i></div><span class="pill todo">6 / 19</span></div>
       <div class="phase"><div class="name">Phase 5<small>Widget and portal</small></div><div class="meter" role="img" aria-label="0 of 12 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 12</span></div>
       <div class="phase"><div class="name">Phase 6<small>Launch</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
     </div>
-    <p class="later">Phase 1 finished with a phase review: a spec check and a security review, run twice, with every
-      finding fixed. Phase 3 gained the time-based moves (auto-close after 7 days resolved, and a reminder after 5 days
-      waiting on the customer), and Phases 4 and 5 gained the console panels and portal views agreed in the design
-      mockups.</p>
+    <p class="later">Phases 2 and 3 are built and merged; their last sign-off steps run in staging, which waits on
+      hosting and DNS. Phase 4 has done sessions, queues, the ticket view, the NoQis look with light mode, the ticket
+      panels, and CDN providers. Two items were added to it this week: filtering and changing tickets by type and
+      category, and moving tickets to any team's queue, including a new Dev team. Phase 5 changed too: customers will
+      sign in on the NoQis website and reach support from there, with no separate support login.</p>
   </section>
 
   <section aria-labelledby="decisions-h">
@@ -289,6 +294,12 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="rule"><h3>Replies and closing</h3><p class="how">A customer reply moves a waiting or resolved ticket back to open; a reply after closing opens a linked follow-up. Customers can close their own tickets, with an optional note.</p><span class="where">A-40 · A-41</span></div>
       <div class="rule"><h3>Mail from someone new</h3><p class="how">Email from someone not on a ticket is never held or attached: it opens a new ticket, linked to the one it mentioned so the agent sees the context.</p><span class="where">D-17</span></div>
       <div class="rule"><h3>AI for agents only</h3><p class="how">An assistant may suggest troubleshooting steps and explain issues to newer agents, in a panel marked as AI. It never writes to customers.</p><span class="where">A-36</span></div>
+      <div class="rule"><h3>The NoQis look</h3><p class="how">The console uses the website's branding, dark by default, with a light mode toggle. Any change to how a screen or email looks is shown as a preview and approved first.</p><span class="where">D-15</span></div>
+      <div class="rule"><h3>Ticket panels</h3><p class="how">Beside each ticket: the customer and their other open tickets, related tickets from the same company, and origin health, which shows labeled samples until monitoring is connected.</p><span class="where">A-34 · A-35 · A-69</span></div>
+      <div class="rule"><h3>CDN providers</h3><p class="how">Fastly, Akamai, and Cloudflare are a list admins manage. Each customer's CDNs are recorded, and a technical ticket's Affected CDN fills itself in when there is only one.</p><span class="where">A-35 · A-69</span></div>
+      <div class="rule"><h3>Billing stays separate</h3><p class="how">Invoices, accounts, and customer records stay in the billing and CRM system. The desk holds no billing data and does not connect to it for now.</p><span class="where">A-68</span></div>
+      <div class="rule"><h3>Website sign-in</h3><p class="how">Customers sign in on the NoQis website's portal and reach support from there. The desk builds no customer login of its own; agents keep their own sign-in.</p><span class="where">D-14 · A-70</span></div>
+      <div class="rule"><h3>Any team's queue</h3><p class="how">Agents will be able to move a ticket to any team: Edge Ninjas, Billing, Escalations, or a new Dev team, and filter and change tickets by type and category.</p><span class="where">A-70</span></div>
     </div>
   </section>
 
@@ -308,19 +319,20 @@ pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span><
         <button class="copy" type="button" id="copy">Copy commands</button>
       </div>
       <ul class="checks">
-        <li><input type="checkbox" id="c1"><label for="c1">Sign in with an invite link and an authenticator app, or switch agents with the purple DEV control. The “Me” filter follows.</label></li>
-        <li><input type="checkbox" id="c2"><label for="c2">On NOQ-1002, try moving New to Open with nobody assigned. It's refused.</label></li>
-        <li><input type="checkbox" id="c3"><label for="c3">Send a public reply on an unassigned ticket. It becomes yours.</label></li>
-        <li><input type="checkbox" id="c4"><label for="c4">As Priya, try taking Jordan's NOQ-1003. Refused. As Sam (lead), it works.</label></li>
-        <li><input type="checkbox" id="c5"><label for="c5">Edit one ticket in two tabs. The second save says someone else changed it.</label></li>
-        <li><input type="checkbox" id="c6"><label for="c6">Resolve, then close a ticket. Everything on it locks.</label></li>
-        <li><input type="checkbox" id="c7"><label for="c7">Create a ticket. Categories follow the chosen type.</label></li>
+        <li><input type="checkbox" id="c1"><label for="c1">Sign in with an invite link and an authenticator app, or switch agents with the purple DEV control.</label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">Click through the queues on the left: Mine, Unassigned, Due soon, Breached, and Triage.</label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">Filter a queue, then save it as a filter. It appears under Saved filters.</label></li>
+        <li><input type="checkbox" id="c4"><label for="c4">Click a row for the side pane, then open the full ticket.</label></li>
+        <li><input type="checkbox" id="c5"><label for="c5">On a ticket, read the Customer, Related tickets, and Origin health panels. Fold one away and reload.</label></li>
+        <li><input type="checkbox" id="c6"><label for="c6">Switch to Light mode in the top bar, then back to dark.</label></li>
+        <li><input type="checkbox" id="c7"><label for="c7">Open a triage ticket. Only the sender shows, nothing from other customers.</label></li>
         <li><input type="checkbox" id="c8"><label for="c8">Run <span class="mono">pnpm db:verify-audit</span>. Every change you made is in the verified chain.</label></li>
       </ul>
     </div>
-    <p class="later">Built but not yet on screen: merge, tags, watchers, and the customer actions, which the Phase 4
-      console and Phase 5 portal will show. Not built yet: sending and receiving email, SLA timers, the website widget,
-      and the portal. Public replies are saved but not sent.</p>
+    <p class="later">Built but not yet on screen: merge, tags, watchers, and the customer actions, which the rest of
+      Phase 4 and the Phase 5 portal will show. Email, SLA timers, and paging are built and switch on with
+      configuration once hosting, DNS, and the PagerDuty and Slack accounts are in place. Not built yet: the website
+      widget and the customer portal.</p>
   </section>
 
   <footer>Every organization, person, and ticket shown is invented sample data. Screenshots are from the running
@@ -329,18 +341,22 @@ pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span><
 
 <script>
 const shots = {
-  list: { src: "screenshots/ticket-list.png", url: "127.0.0.1:5173/#/", h: 700, alt: "Ticket list with status and assignee filters and five open tickets",
-    notes: [["Filters", "Status (all open, a single status, or all) and assignee (anyone, me, unassigned, a named agent)."],
-            ["Signals", "Status and priority pills. P1 stands out in red."],
-            ["Acting as", "Agents sign in with a password and an authenticator app. In development, the DEV switcher can act as any sample agent."]] },
-  ticket: { src: "screenshots/ticket-page.png", url: "127.0.0.1:5173/#/tickets/NOQ-1001", h: 1100, alt: "Ticket page showing the conversation, an internal note, controls, and a timeline",
-    notes: [["Conversation", "Customer messages, public replies, and internal notes, which are yellow and dashed so they're never mistaken for replies."],
-            ["Controls", "Status only offers moves allowed from the current one. Priority and assignee save immediately."],
-            ["Timeline", "Every change, who made it, and whether a customer could ever see it."]] },
-  new: { src: "screenshots/new-ticket.png", url: "127.0.0.1:5173/#/new", h: 800, alt: "New ticket form with organization, requester, type, category, priority, assignee, subject, and note",
+  list: { src: "screenshots/ticket-list.png", url: "127.0.0.1:5173/#/queue/all", h: 1000, alt: "The All tickets queue in the dark NoQis look, with queue buttons on the left, filters, people chips, and a list with status, priority, SLA, and assignee",
+    notes: [["Queues", "All tickets, Mine, Unassigned, Due soon, Breached, and Triage on the left, with counts, plus each agent's saved filters."],
+            ["Workload", "Chips show open tickets per person, unassigned first. Click one to filter the list."],
+            ["SLA at a glance", "Each row shows when its next SLA target is due, or that it breached. Click a row for a side pane of the latest updates."]] },
+  ticket: { src: "screenshots/ticket-page.png", url: "127.0.0.1:5173/#/tickets/NOQ-1002", h: 1800, alt: "A ticket page with the conversation and reply box, and on the right the Ticket, SLA, Customer, Related tickets, and Origin health panels",
+    notes: [["Conversation", "Customer messages, public replies, and internal notes, which are dashed and marked so they're never mistaken for replies."],
+            ["Customer panel", "The contact, whether their email is verified, the company's plan, SLA policy, and CDNs, and their other open tickets."],
+            ["Related tickets", "Similar tickets from the same company only, found by plain text search, never AI."],
+            ["Origin health", "Clearly labeled sample results until NoQis monitoring is connected. The desk never contacts customer servers."]] },
+  light: { src: "screenshots/light-mode.png", url: "127.0.0.1:5173/#/queue/all", h: 1000, alt: "The same queue in light mode: the NoQis branding on a white background",
+    notes: [["One click", "The Light mode button in the top bar switches every screen, and the browser remembers the choice."],
+            ["Same brand", "The NoQis colors and fonts on white, for anyone who finds dark screens hard on the eyes."]] },
+  new: { src: "screenshots/new-ticket.png", url: "127.0.0.1:5173/#/new", h: 700, alt: "New ticket form with organization, requester, type, category, priority, assignee, subject, and note",
     notes: [["Linked fields", "Requesters come from the chosen organization. Categories come from the chosen type."],
             ["Note, not a reply", "The optional text is saved as an internal note, so nothing is attributed to the customer."],
-            ["Lands on the ticket", "After saving, the console opens the new ticket with its first timeline entry."]] },
+            ["Affected CDN", "A technical ticket's Affected CDN fills itself in when the customer uses exactly one CDN."]] },
 };
 const img = document.getElementById("shot");
 const url = document.getElementById("shot-url");
