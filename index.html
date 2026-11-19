@@ -161,22 +161,23 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
   <header class="top">
     <div class="ticketline">
       <span class="ref">NOQ-BUILD</span>
-      <span class="eyebrow">Shift report · November 18, 2026</span>
+      <span class="eyebrow">Shift report · November 19, 2026</span>
     </div>
     <h1>NoQis Support Desk: email, SLA timers, and an agent console in the NoQis look</h1>
     <p class="lede">Phases 0 to 3 are built: the ticket core, email in and out, and SLA timers with on-call paging.
-      Phase 4, the agent console, is over a third done. Agents work from full-width queues with live SLA countdowns,
-      filter and change tickets by type and category, see a ticket's
-      customer, related tickets, and origin health beside the conversation, and use the NoQis branding in dark mode,
-      with a light mode for anyone who prefers it. Every change still lands in Postgres with its timeline entry and an
+      Phase 4, the agent console, is nearly two thirds done. Agents work from full-width queues with live SLA countdowns,
+      filter and change tickets by type and category, move them between team queues, and write in one large update
+      box that switches between a customer update, an internal update, and a logged phone call. They watch tickets,
+      @mention teammates, merge duplicates, and mark spam, with the ticket's customer, related tickets, and origin
+      health beside the conversation, in the NoQis branding, dark by default with a light mode. Every change still lands in Postgres with its timeline entry and an
       audit entry that can't be edited after the fact.</p>
     <div class="facts" role="list">
-      <div class="fact" role="listitem"><b>1,072 / 1,072</b><span>tests passing, on Postgres 17 and 18</span></div>
-      <div class="fact" role="listitem"><b>54</b><span>plan tasks done</span></div>
-      <div class="fact" role="listitem"><b>53</b><span>database migrations</span></div>
+      <div class="fact" role="listitem"><b>1,138 / 1,138</b><span>tests passing, on Postgres 17 and 18</span></div>
+      <div class="fact" role="listitem"><b>60</b><span>plan tasks done</span></div>
+      <div class="fact" role="listitem"><b>56</b><span>database migrations</span></div>
       <div class="fact" role="listitem"><b>0</b><span>open security scan failures</span></div>
     </div>
-    <p>Work is merged into <span class="mono">main</span> through pull requests, 52 so far, each passing GitHub Actions
+    <p>Work is merged into <span class="mono">main</span> through pull requests, 59 so far, each passing GitHub Actions
       CI on PostgreSQL 17 and 18. Before every commit the change also passes scans for leaked secrets, vulnerable
       packages, and OWASP code rules, plus an active OWASP ZAP attack scan of the whole agent API. The riskiest
       changes get an independent security review, and every finding is fixed with a test.</p>
@@ -185,8 +186,9 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
   <section aria-labelledby="screens-h">
     <span class="eyebrow">What an agent sees</span>
     <h2 id="screens-h">The agent console</h2>
-    <p class="later">Screens from the running console with invented sample data. Merge, tag, and watcher controls,
-      the two update boxes, and the admin screens are still to come in Phase 4.</p>
+    <p class="later">Screens from the running console with invented sample data. Still to come in Phase 4: agent
+      attachments, a warning when two agents work the same ticket, customer history, the admin screens, the audit
+      viewer, and the knowledge and AI-for-agents panels.</p>
     <div class="tabs" role="tablist" aria-label="Console screens">
       <button class="tab" role="tab" id="tab-list" aria-controls="panel" aria-selected="true" data-screen="list">Queues</button>
       <button class="tab" role="tab" id="tab-ticket" aria-controls="panel" aria-selected="false" data-screen="ticket">Ticket page</button>
@@ -265,15 +267,15 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="phase"><div class="name">Phase 1<small>Ticket core · done</small></div><div class="meter" role="img" aria-label="13 of 13 tasks"><i style="width:100%"></i></div><span class="pill done">13 / 13</span></div>
       <div class="phase"><div class="name">Phase 2<small>Email · staging test waits</small></div><div class="meter" role="img" aria-label="13 of 14 tasks"><i style="width:93%"></i></div><span class="pill done">13 / 14</span></div>
       <div class="phase"><div class="name">Phase 3<small>SLA timers · staging test waits</small></div><div class="meter" role="img" aria-label="8 of 8 tasks"><i style="width:100%"></i></div><span class="pill done">8 / 8</span></div>
-      <div class="phase here"><div class="name">Phase 4<small>Agent console · now</small></div><div class="meter" role="img" aria-label="7 of 19 tasks"><i style="width:37%"></i></div><span class="pill todo">7 / 19</span></div>
+      <div class="phase here"><div class="name">Phase 4<small>Agent console · now</small></div><div class="meter" role="img" aria-label="13 of 20 tasks"><i style="width:65%"></i></div><span class="pill todo">13 / 20</span></div>
       <div class="phase"><div class="name">Phase 5<small>Widget and portal</small></div><div class="meter" role="img" aria-label="0 of 12 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 12</span></div>
       <div class="phase"><div class="name">Phase 6<small>Launch</small></div><div class="meter" role="img" aria-label="0 of 9 tasks"><i style="width:0%"></i></div><span class="pill todo">0 / 9</span></div>
     </div>
     <p class="later">Phases 2 and 3 are built and merged; their last sign-off steps run in staging, which waits on
       hosting and DNS. Phase 4 has done sessions, queues, the ticket view, the NoQis look with light mode, the ticket
-      panels, CDN providers, and filtering and changing tickets by type and category, with a full-width layout. Next
-      on its list: moving tickets to any team's queue, including a new Dev team. Phase 5 changed too: customers will
-      sign in on the NoQis website and reach support from there, with no separate support login.</p>
+      panels, CDN providers, type and category, team queues with a new Dev team, the update box, watching,
+      @mentions, phone calls, and merge and spam. The Phase 5 customer portal is designed: customers sign in on the
+      NoQis website, open common requests in one click, and see what is waiting on them and for how long.</p>
   </section>
 
   <section aria-labelledby="decisions-h">
@@ -287,7 +289,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="rule"><h3>Three queues</h3><p class="how">Edge Ninjas for support, Billing for the billing department, and Escalations for tickets that need senior attention. Invoices stay in the CRM.</p><span class="where">D-08 · A-17</span></div>
       <div class="rule"><h3>Compliance</h3><p class="how">Strong controls now, a legal review before launch, and no card data stored. Customers are warned not to send card numbers, health data, or keys.</p><span class="where">D-07</span></div>
       <div class="rule"><h3>Customer portal</h3><p class="how">Customers sign in from the website's support login and see open and past tickets: status, priority (Low to Critical), whether it is pending an agent or customer update, and the conversation. They can open tickets and reply.</p><span class="where">D-11 · A-18</span></div>
-      <div class="rule"><h3>Two update boxes</h3><p class="how">On each ticket, agents get a Customer update box that goes to the customer, and an Internal update box only staff see. Every update is saved on the ticket. An @mention pings that teammate by email and Slack.</p><span class="where">A-19</span></div>
+      <div class="rule"><h3>One update box</h3><p class="how">One large box with a toggle: a Customer update goes to the customer, an Internal update only staff see. An @mention pings that teammate by email and Slack, without the update's text.</p><span class="where">A-19 · A-74 · A-76</span></div>
       <div class="rule"><h3>Unknown senders</h3><p class="how">Email from an unrecognized address goes to a triage queue for a person to sort, with no automatic reply.</p><span class="where">D-09</span></div>
       <div class="rule"><h3>Branding and hosting</h3><p class="how">NoQis branding only on customer email. Data stays in a US region, encrypted. The database is Supabase; the application host is still being chosen.</p><span class="where">D-10 · D-02</span></div>
       <div class="rule"><h3>Your Edge Ninja</h3><p class="how">An opened ticket tells the customer "Your Edge Ninja is Maya", first name only, or "billing specialist" for billing. Staff see the whole team's workload by person.</p><span class="where">A-39</span></div>
@@ -301,7 +303,10 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line)
       <div class="rule"><h3>Billing stays separate</h3><p class="how">Invoices, accounts, and customer records stay in the billing and CRM system. The desk holds no billing data and does not connect to it for now.</p><span class="where">A-68</span></div>
       <div class="rule"><h3>Website sign-in</h3><p class="how">Customers sign in on the NoQis website's portal and reach support from there. The desk builds no customer login of its own; agents keep their own sign-in.</p><span class="where">D-14 · A-70</span></div>
       <div class="rule"><h3>Type and category</h3><p class="how">Agents filter, search, and change tickets by type and category. A new type always gets a category from its own list. The console now uses the full screen width.</p><span class="where">A-70 · A-71</span></div>
-      <div class="rule"><h3>Any team's queue</h3><p class="how">Next: agents will be able to move a ticket to any team: Edge Ninjas, Billing, Escalations, or a new Dev team.</p><span class="where">A-70</span></div>
+      <div class="rule"><h3>Any team's queue</h3><p class="how">Any agent assigns or unassigns a ticket and moves it to Escalations or Billing; only leads and admins move it to Dev. Leads hear of the important changes.</p><span class="where">A-70 · A-73</span></div>
+      <div class="rule"><h3>Phone calls count</h3><p class="how">A logged call to the customer counts as a customer update. Its summary stays with staff; the customer sees only that NoQis called.</p><span class="where">D-04 · A-77</span></div>
+      <div class="rule"><h3>Merge and spam</h3><p class="how">Duplicates merge into the older ticket by default, after the agent picks which and sees what will happen. Spam is hidden from customers and only leads and admins can undo it.</p><span class="where">A-38 · A-78</span></div>
+      <div class="rule"><h3>The customer portal</h3><p class="how">One-click common requests, summary boxes that filter the list, and a "Needs your reply" list showing how long each ticket has waited on the customer.</p><span class="where">A-72 · A-79</span></div>
     </div>
   </section>
 
@@ -331,8 +336,8 @@ pnpm db:verify-audit  <span class="c"># afterward: check the audit chain</span><
         <li><input type="checkbox" id="c8"><label for="c8">Run <span class="mono">pnpm db:verify-audit</span>. Every change you made is in the verified chain.</label></li>
       </ul>
     </div>
-    <p class="later">Built but not yet on screen: merge, tags, watchers, and the customer actions, which the rest of
-      Phase 4 and the Phase 5 portal will show. Email, SLA timers, and paging are built and switch on with
+    <p class="later">Built but not yet on screen: tags and the customer actions, which the rest of Phase 4 and the
+      Phase 5 portal will show. Email, SLA timers, and paging are built and switch on with
       configuration once hosting, DNS, and the PagerDuty and Slack accounts are in place. Not built yet: the website
       widget and the customer portal.</p>
   </section>
@@ -348,7 +353,7 @@ const shots = {
             ["Type and category", "Filter by type and category; the category list narrows to the chosen type. Search finds category names too."],
             ["Workload", "Chips show open tickets per person, unassigned first. Click one to filter the list."],
             ["SLA at a glance", "Each row shows when its next SLA target is due, or that it breached. Click a row for a side pane of the latest updates."]] },
-  ticket: { src: "screenshots/ticket-page.png", url: "127.0.0.1:5173/#/tickets/NOQ-1002", h: 1800, alt: "A ticket page with the conversation and reply box, and on the right the Ticket, SLA, Customer, Related tickets, and Origin health panels",
+  ticket: { src: "screenshots/ticket-page.png", url: "127.0.0.1:5173/#/tickets/NOQ-1003", h: 1800, alt: "A ticket page with the conversation, the update box with Customer update, Internal update, and Phone call, the Watch and Merge buttons, and on the right the Ticket, SLA, People, and Customer panels",
     notes: [["Conversation", "Customer messages, public replies, and internal notes, which are dashed and marked so they're never mistaken for replies."],
             ["Type and category", "Pickers in the Ticket card. A new type asks for a matching category before it saves."],
             ["Customer panel", "The contact, whether their email is verified, the company's plan, SLA policy, and CDNs, and their other open tickets."],
